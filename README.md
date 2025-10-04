@@ -33,7 +33,7 @@ Kompletny system zarządzania i śledzenia obiektów orbitalnych z detekcją zbl
 
 ### Główne funkcjonalności
 
-- **Propagacja Keplerianowska** — precyzyjne obliczanie pozycji satelitów w czasie
+- **Propagacja Keplerowska** — precyzyjne obliczanie pozycji satelitów w czasie
 - **REST API Server** — serwer FastAPI z automatyczną dokumentacją Swagger
 - **Zarządzanie orbitami** — pełne CRUD dla orbit i satelitów  
 - **Obliczanie pozycji** — pozycja satelity w dowolnym momencie czasu (szerokosc, dlugosc, wysokosc)
@@ -107,14 +107,14 @@ hackaton/
 **Modele danych** (`satelity_modele.py`):
 
 - `WspolrzedneGeodezyjne` — współrzędne lat/lon/alt z metodami konwersji
-- `ParametryOrbitalne` — parametry Keplerianowskie (a, i, RAAN)
+- `ParametryOrbitalne` — parametry Keplerowskie (a, i, RAAN)
 - `ModelOrbityBD` — model SQLAlchemy dla orbit
 - `ModelObiektuBD` — model SQLAlchemy dla satelitów
 - Schematy Pydantic — pełna walidacja danych wejściowych/wyjściowych
 
 **Logika biznesowa** (`satelity_serwisy.py`):
 
-- `PropagatorKeplerowski` — propagacja pozycji metodą Keplerianowską
+- `PropagatorKeplerowski` — propagacja pozycji metodą Keplerowską
 - `WalidatorISO8601` — parsowanie i walidacja dat ISO 8601
 - Funkcje pomocnicze — obliczenia czasu, walidacja parametrów
 
@@ -346,7 +346,7 @@ Otwórz przeglądarkę: `http://localhost:8000/docs`
 
 ## Propagacja orbit
 
-System wykorzystuje **propagację Keplerianowską** do obliczania pozycji satelitów:
+System wykorzystuje **propagację Keplerowską** do obliczania pozycji satelitów:
 
 ### Parametry orbitalne
 
@@ -462,7 +462,7 @@ class WspolrzedneGeodezyjne:
         """Konwersja do współrzędnych kartezjańskich (x, y, z)"""
 ```
 
-**ParametryOrbitalne** — parametry Keplerianowskie:
+**ParametryOrbitalne** — parametry Keplerowskie:
 
 ```python
 @dataclass
@@ -781,7 +781,7 @@ System wykorzystuje profesjonalne wzorce projektowe:
 ### Strategy Pattern
 
 - **PropagatorOrbity** — abstrakcja dla różnych metod propagacji
-- **PropagatorKeplerowski** — konkretna implementacja Keplerianowska
+- **PropagatorKeplerowski** — konkretna implementacja Keplerowska
 
 ### Service Layer
 
