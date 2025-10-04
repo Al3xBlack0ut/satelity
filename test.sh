@@ -40,9 +40,8 @@ echo ""
 echo "CZĘŚĆ 1: Testy Podstawowe"
 echo "-----------------------------------"
 test_endpoint "Health Check" \
-    "curl -s $BASE_URL/health" \
-    "healthy"
-
+    "curl -s $BASE_URL/status" \
+    '"status":"działa"'
 test_endpoint "Root Endpoint" \
     "curl -s $BASE_URL/" \
     "System Śledzenia"

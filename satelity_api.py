@@ -320,10 +320,10 @@ async def endpoint_glowny():
     }
 
 
-@system_api.get("/health")
+@system_api.get("/status")
 async def sprawdzenie_stanu():
     """Sprawdzenie stanu systemu"""
-    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
+    return {"status": "działa", "timestamp": datetime.now(timezone.utc).isoformat()}
 
 
 # ===========================================================================================

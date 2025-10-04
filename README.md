@@ -210,7 +210,7 @@ Serwer zostanie uruchomiony pod adresem: `http://localhost:8000`
 | Method | Endpoint | Opis |
 |--------|----------|------|
 | `GET` | `/` | Strona główna z informacjami o systemie |
-| `GET` | `/health` | Health check |
+| `GET` | `/status` | Sprawdzenie statusu |
 
 #### Orbity (CRUD)
 
@@ -539,31 +539,6 @@ System posiada **25 testów funkcjonalnych** pokrywających wszystkie funkcjonal
 ./test.sh
 ```
 
-### Pokrycie testów
-
-#### Testy zaliczone: 25/25 ✅
-
-- ✅ Health check i podstawowe endpointy (2 testy)
-- ✅ CRUD orbit (5 testów)
-- ✅ CRUD satelitów (5 testów)
-- ✅ Obliczenia pozycji (2 testy)
-- ✅ Detekcja zbliżeń (1 test)
-- ✅ Walidacja błędów (5 testów)
-- ✅ Usuwanie zasobów (3 testy)
-- ✅ Paginacja (2 testy)
-
-### Przykładowe testy
-
-```text
-Testing: Health Check ... ✅ PASS
-Testing: Create Orbit 1 ... ✅ PASS
-Testing: Create Satellite 1 ... ✅ PASS
-Testing: Calculate Position (2024) ... ✅ PASS
-Testing: Detect Collisions ... ✅ PASS
-Testing: Invalid Altitude (too low) ... ✅ PASS
-Testing: Pagination (skip=0, limit=1) ... ✅ PASS
-```
-
 ---
 
 ## Przykłady użycia
@@ -693,7 +668,7 @@ pip install -r requirements.txt
 ./run.sh
 
 # Sprawdź czy działa
-curl http://localhost:8000/health
+curl http://localhost:8000/status
 ```
 
 ### Błąd: "Invalid altitude" podczas tworzenia orbity
@@ -738,7 +713,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Test API
 import requests
-response = requests.get("http://localhost:8000/health")
+response = requests.get("http://localhost:8000/status")
 print(response.json())
 ```
 
@@ -748,7 +723,7 @@ print(response.json())
 # Uruchomienie wszystkich testów
 ./test.sh
 
-# Oczekiwany wynik: 25/25 testów ✅
+# Oczekiwany wynik: 25/25 testów 
 ```
 
 ---
