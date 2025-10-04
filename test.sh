@@ -39,10 +39,10 @@ echo ""
 
 echo "CZĘŚĆ 1: Testy Podstawowe"
 echo "-----------------------------------"
-test_endpoint "Health Check" \
+test_endpoint "Sprawdzenie Stanu" \
     "curl -s $BASE_URL/status" \
     '"status":"działa"'
-test_endpoint "Root Endpoint" \
+test_endpoint "Endpoint Główny" \
     "curl -s $BASE_URL/" \
     "System Śledzenia"
 
@@ -51,23 +51,23 @@ echo "CZĘŚĆ 2: CRUD Orbit"
 echo "-----------------------------------"
 
 # Tworzenie orbit
-test_endpoint "Create Orbit 1" \
+test_endpoint "Utworzenie Orbity 1" \
     "curl -s -X POST $BASE_URL/orbity/ -H 'Content-Type: application/json' -d '{\"nazwa\":\"TEST-LEO\",\"wysokosc\":550,\"inklinacja\":51.6,\"wezel\":90}'" \
     '"id"'
 
-test_endpoint "Create Orbit 2" \
+test_endpoint "Utworzenie Orbity 2" \
     "curl -s -X POST $BASE_URL/orbity/ -H 'Content-Type: application/json' -d '{\"nazwa\":\"TEST-MEO\",\"wysokosc\":20000,\"inklinacja\":55,\"wezel\":45}'" \
     '"id"'
 
-test_endpoint "List Orbits" \
+test_endpoint "Lista Orbit" \
     "curl -s $BASE_URL/orbity/" \
     '"razem"'
 
-test_endpoint "Get Orbit by ID" \
+test_endpoint "Pobierz Orbitę po ID" \
     "curl -s $BASE_URL/orbity/1" \
     "TEST-LEO"
 
-test_endpoint "Update Orbit" \
+test_endpoint "Aktualizacja Orbity" \
     "curl -s -X PUT $BASE_URL/orbity/1 -H 'Content-Type: application/json' -d '{\"nazwa\":\"TEST-LEO-UPDATED\",\"wysokosc\":560,\"inklinacja\":51.6,\"wezel\":90}'" \
     "TEST-LEO-UPDATED"
 
@@ -75,23 +75,23 @@ echo ""
 echo "CZĘŚĆ 3: CRUD Satelitów"
 echo "-----------------------------------"
 
-test_endpoint "Create Satellite 1" \
+test_endpoint "Utworzenie Satelity 1" \
     "curl -s -X POST $BASE_URL/satelity/ -H 'Content-Type: application/json' -d '{\"nazwa\":\"SAT-A\",\"operator\":\"TestOrg\",\"data_startu\":\"2020-01-01T00:00:00Z\",\"status\":\"active\",\"dlugosc_poczatkowa\":0,\"id_orbity\":1}'" \
     '"id"'
 
-test_endpoint "Create Satellite 2" \
+test_endpoint "Utworzenie Satelity 2" \
     "curl -s -X POST $BASE_URL/satelity/ -H 'Content-Type: application/json' -d '{\"nazwa\":\"SAT-B\",\"operator\":\"TestOrg\",\"data_startu\":\"2020-01-01T00:00:00Z\",\"status\":\"active\",\"dlugosc_poczatkowa\":10,\"id_orbity\":1}'" \
     '"id"'
 
-test_endpoint "List Satellites" \
+test_endpoint "Lista Satelitów" \
     "curl -s $BASE_URL/satelity/" \
     '"razem"'
 
-test_endpoint "Get Satellite by ID" \
+test_endpoint "Pobierz Satelitę po ID" \
     "curl -s $BASE_URL/satelity/1" \
     "SAT-A"
 
-test_endpoint "Update Satellite" \
+test_endpoint "Aktualizacja Satelity" \
     "curl -s -X PUT $BASE_URL/satelity/1 -H 'Content-Type: application/json' -d '{\"nazwa\":\"SAT-A-UPDATED\",\"operator\":\"TestOrg\",\"data_startu\":\"2020-01-01T00:00:00Z\",\"status\":\"active\",\"dlugosc_poczatkowa\":0,\"id_orbity\":1}'" \
     'SAT-A-UPDATED'
 
@@ -99,59 +99,59 @@ echo ""
 echo "CZĘŚĆ 4: Obliczenia Orbitalne"
 echo "-----------------------------------"
 
-test_endpoint "Calculate Position (2024)" \
-    "curl -s '$BASE_URL/satelity/1/pozycja?timestamp=2024-06-15T12:00:00Z'" \
+test_endpoint "Obliczenie Pozycji (2024)" \
+    "curl -s '$BASE_URL/satelity/1/pozycja?znacznik_czasu=2024-06-15T12:00:00Z'" \
     '"szerokosc"'
 
-test_endpoint "Calculate Position (2025)" \
-    "curl -s '$BASE_URL/satelity/2/pozycja?timestamp=2025-01-01T00:00:00Z'" \
+test_endpoint "Obliczenie Pozycji (2025)" \
+    "curl -s '$BASE_URL/satelity/2/pozycja?znacznik_czasu=2025-01-01T00:00:00Z'" \
     '"dlugosc"'
 
 echo ""
 echo "CZĘŚĆ 5: Detekcja Zbliżeń"
 echo "-----------------------------------"
 
-test_endpoint "Detect Collisions" \
-    "curl -s '$BASE_URL/zblizenia?start_date=2020-01-01T00:00:00Z&end_date=2025-06-30T00:00:00Z'" \
+test_endpoint "Wykrywanie Zbliżeń" \
+    "curl -s '$BASE_URL/zblizenia?data_poczatkowa=2020-01-01T00:00:00Z&data_koncowa=2025-06-30T00:00:00Z'" \
     'zblizenia'
 
 echo ""
 echo "CZĘŚĆ 6: Walidacja i Błędy"
 echo "-----------------------------------"
 
-test_endpoint "Invalid Altitude (too low)" \
+test_endpoint "Nieprawidłowa Wysokość (za niska)" \
     "curl -s -X POST $BASE_URL/orbity/ -H 'Content-Type: application/json' -d '{\"nazwa\":\"INVALID\",\"wysokosc\":50,\"inklinacja\":51.6,\"wezel\":90}'" \
     '"detail"'
 
-test_endpoint "Invalid Inclination" \
+test_endpoint "Nieprawidłowa Inklinacja" \
     "curl -s -X POST $BASE_URL/orbity/ -H 'Content-Type: application/json' -d '{\"nazwa\":\"INVALID2\",\"wysokosc\":550,\"inklinacja\":200,\"wezel\":90}'" \
     '"detail"'
 
-test_endpoint "Duplicate Orbit Name" \
+test_endpoint "Duplikat Nazwy Orbity" \
     "curl -s -X POST $BASE_URL/orbity/ -H 'Content-Type: application/json' -d '{\"nazwa\":\"TEST-LEO-UPDATED\",\"wysokosc\":550,\"inklinacja\":51.6,\"wezel\":90}'" \
     '"detail"'
 
-test_endpoint "Non-existent Orbit" \
+test_endpoint "Nieistniejąca Orbita" \
     "curl -s $BASE_URL/orbity/99999" \
-    "not found"
+    "nie znalezion"
 
-test_endpoint "Non-existent Satellite" \
+test_endpoint "Nieistniejący Satelita" \
     "curl -s $BASE_URL/satelity/99999" \
-    "not found"
+    "nie znalezion"
 
 echo ""
 echo "CZĘŚĆ 7: Usuwanie Zasobów"
 echo "-----------------------------------"
 
-test_endpoint "Delete Satellite" \
+test_endpoint "Usunięcie Satelity" \
     "curl -s -X DELETE $BASE_URL/satelity/2 -o /dev/null -w '%{http_code}'" \
     "204"
 
-test_endpoint "Verify Deletion" \
+test_endpoint "Weryfikacja Usunięcia" \
     "curl -s $BASE_URL/satelity/2" \
-    "not found"
+    "nie znalezion"
 
-test_endpoint "Delete Orbit (with satellites)" \
+test_endpoint "Usunięcie Orbity (z satelitami)" \
     "curl -s -X DELETE $BASE_URL/orbity/1" \
     "detail"
 
@@ -159,11 +159,11 @@ echo ""
 echo "CZĘŚĆ 8: Paginacja"
 echo "-----------------------------------"
 
-test_endpoint "Pagination (skip=0, limit=1)" \
+test_endpoint "Stronicowanie (skip=0, limit=1)" \
     "curl -s '$BASE_URL/satelity/?skip=0&limit=1'" \
     'limit'
 
-test_endpoint "Pagination (skip=1, limit=1)" \
+test_endpoint "Stronicowanie (skip=1, limit=1)" \
     "curl -s '$BASE_URL/satelity/?skip=1&limit=1'" \
     'pomin'
 

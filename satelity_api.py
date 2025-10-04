@@ -5,6 +5,7 @@ System Śledzenia Orbit Satelitarnych - Warstwa API
 Autor: Aleks Czarnecki
 
 Endpointy:
+- /status - sprawdzenie stanu systemu
 - /orbity/ - zarządzanie orbitami
 - /satelity/ - zarządzanie obiektami orbitalnymi
 - /satelity/{id}/pozycja - obliczanie pozycji
@@ -374,7 +375,7 @@ async def pobierz_orbite(
     ).first()
     
     if not orbita:
-        raise HTTPException(status_code=404, detail="Orbit not found")
+        raise HTTPException(status_code=404, detail="Orbita nie znaleziona")
     
     return SchematOrbitWyjscie.z_modelu(orbita)
 
@@ -383,7 +384,7 @@ async def pobierz_orbite(
 async def listuj_orbity(
     skip: int = Query(0, ge=0),
     limit: int = Query(DOMYSLNA_WIELKOSC_STRONY, ge=1, le=MAX_OBIEKTOW_NA_STRONE),
-    name: Optional[str] = None,
+    nazwa: Optional[str] = None,
     sesja: Session = Depends(uzyskaj_sesje_bd)
 ):
     """Listuje orbity z filtrowaniem i paginacją"""
@@ -391,9 +392,9 @@ async def listuj_orbity(
     
     zapytanie = sesja.query(ModelOrbityBD)
     
-    if name:
+    if nazwa:
         zapytanie = zapytanie.filter(
-            ModelOrbityBD.identyfikator_orbity.ilike(f"%{name}%")
+            ModelOrbityBD.identyfikator_orbity.ilike(f"%{nazwa}%")
         )
     
     total = zapytanie.count()
@@ -421,7 +422,7 @@ async def aktualizuj_orbite(
     ).first()
     
     if not orbita:
-        raise HTTPException(status_code=404, detail="Orbit not found")
+        raise HTTPException(status_code=404, detail="Orbita nie znaleziona")
     
     # Sprawdź konflikt nazwy
     konflikt = sesja.query(ModelOrbityBD).filter(
@@ -459,7 +460,7 @@ async def usun_orbite(
     ).first()
     
     if not orbita:
-        raise HTTPException(status_code=404, detail="Orbit not found")
+        raise HTTPException(status_code=404, detail="Orbita nie znaleziona")
     
     # Sprawdź powiązania
     liczba_powiazanych = sesja.query(ModelObiektuBD).filter(
@@ -525,7 +526,7 @@ async def utworz_obiekt(
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=400, detail="Invalid ID format or invalid data")
+        raise HTTPException(status_code=400, detail="Nieprawidłowy format identyfikatora lub dane")
 
 
 @system_api.get("/satelity/{id}", response_model=SchematObiektuWyjscie)
@@ -541,7 +542,7 @@ async def pobierz_obiekt(
     ).first()
     
     if not obiekt:
-        raise HTTPException(status_code=404, detail="Satellite not found")
+        raise HTTPException(status_code=404, detail="Satelita nie znaleziony")
     
     return SchematObiektuWyjscie.z_modelu(obiekt)
 
@@ -588,7 +589,7 @@ async def aktualizuj_obiekt(
     ).first()
     
     if not obiekt:
-        raise HTTPException(status_code=404, detail="Satellite not found")
+        raise HTTPException(status_code=404, detail="Satelita nie znaleziony")
     
     # Sprawdź konflikt nazwy
     konflikt = sesja.query(ModelObiektuBD).filter(
@@ -605,7 +606,7 @@ async def aktualizuj_obiekt(
     ).first()
     
     if not orbita:
-        raise HTTPException(status_code=400, detail="Invalid ID format or invalid data")
+        raise HTTPException(status_code=400, detail="Nieprawidłowy format identyfikatora lub dane")
     
     # Aktualizuj
     obiekt.nazwa_obiektu = dane_wej.nazwa_obiektu
@@ -636,7 +637,7 @@ async def usun_obiekt(
     ).first()
     
     if not obiekt:
-        raise HTTPException(status_code=404, detail="Satellite not found")
+        raise HTTPException(status_code=404, detail="Satelita nie znaleziony")
     
     sesja.delete(obiekt)
     sesja.commit()
@@ -653,7 +654,7 @@ async def usun_obiekt(
 @system_api.get("/satelity/{id}/pozycja", response_model=SchematPozycjiWyjscie)
 async def oblicz_pozycje_obiektu(
     id_zasobu: str = Path(alias="id"),
-    timestamp: str = Query(..., description="ISO-8601 UTC datetime"),
+    znacznik_czasu: str = Query(..., description="ISO-8601 UTC datetime"),
     sesja: Session = Depends(uzyskaj_sesje_bd)
 ):
     """Oblicza pozycję obiektu w określonym czasie"""
@@ -670,12 +671,12 @@ async def oblicz_pozycje_obiektu(
     ).first()
     
     if not obiekt:
-        raise HTTPException(status_code=404, detail="Satellite not found")
+        raise HTTPException(status_code=404, detail="Satelita nie znaleziony")
     
     # Waliduj znacznik czasu
     try:
         walidator = WalidatorISO8601()
-        znacznik = walidator.waliduj_znacznik(timestamp)
+        znacznik = walidator.waliduj_znacznik(znacznik_czasu)
     except BladWalidacjiCzasu:
         raise HTTPException(status_code=400, detail="Nieprawidłowy format znacznika czasu")
     
@@ -706,9 +707,9 @@ async def oblicz_pozycje_obiektu(
 
 @system_api.get("/zblizenia", response_model=SchematListyKolizji)
 async def wykryj_zblizenia(
-    start_date: str = Query(..., description="Data początkowa analizy (ISO-8601)"),
-    end_date: str = Query(..., description="Data końcowa analizy (ISO-8601)"),
-    precision: str = Query("1m", description="Precyzja czasowa (np. 1m, 5s, 1h)"),
+    data_poczatkowa: str = Query(..., description="Data początkowa analizy (ISO-8601)"),
+    data_koncowa: str = Query(..., description="Data końcowa analizy (ISO-8601)"),
+    precyzja: str = Query("1m", description="Precyzja czasowa (np. 1m, 5s, 1h)"),
     sesja: Session = Depends(uzyskaj_sesje_bd)
 ):
     """Wykrywa miejsca zbliżeń (spotkań) satelitów w przedziale czasowym"""
@@ -717,8 +718,8 @@ async def wykryj_zblizenia(
         
         # Parsuj daty
         try:
-            dt_start = walidator.waliduj_znacznik(start_date)
-            dt_koniec = walidator.waliduj_znacznik(end_date)
+            dt_start = walidator.waliduj_znacznik(data_poczatkowa)
+            dt_koniec = walidator.waliduj_znacznik(data_koncowa)
         except BladWalidacjiCzasu:
             raise HTTPException(status_code=400, detail="Nieprawidłowy format znacznika czasu")
         
@@ -728,7 +729,7 @@ async def wykryj_zblizenia(
         
         # Parsuj precyzję
         try:
-            delta_czasu = serwis_zdarzen_globalny.parsuj_precyzje(precision)
+            delta_czasu = serwis_zdarzen_globalny.parsuj_precyzje(precyzja)
         except ValueError:
             raise HTTPException(status_code=400, detail="Nieprawidłowy format znacznika czasu")
         

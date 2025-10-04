@@ -236,8 +236,8 @@ Serwer zostanie uruchomiony pod adresem: `http://localhost:8000`
 
 | Method | Endpoint | Opis |
 |--------|----------|------|
-| `GET` | `/satelity/{id}/pozycja?timestamp=...` | Pozycja satelity w czasie |
-| `GET` | `/zblizenia?start_date=...&end_date=...&precision=...` | Wykrywanie zbliżeń orbitów |
+| `GET` | `/satelity/{id}/pozycja?znacznik_czasu=...` | Pozycja satelity w czasie |
+| `GET` | `/zblizenia?data_poczatkowa=...&data_koncowa=...&precyzja=...` | Wykrywanie zbliżeń orbitów |
 
 ### Przykłady wywołań API
 
@@ -272,7 +272,7 @@ curl -X POST http://localhost:8000/satelity/ \
 **Obliczenie pozycji:**
 
 ```bash
-curl "http://localhost:8000/satelity/1/pozycja?timestamp=2024-06-15T12:00:00Z"
+curl "http://localhost:8000/satelity/1/pozycja?znacznik_czasu=2024-06-15T12:00:00Z"
 ```
 
 **Odpowiedź:**
@@ -288,7 +288,7 @@ curl "http://localhost:8000/satelity/1/pozycja?timestamp=2024-06-15T12:00:00Z"
 **Detekcja zbliżeń:**
 
 ```bash
-curl "http://localhost:8000/zblizenia?start_date=2020-01-01T00:00:00Z&end_date=2020-01-02T00:00:00Z&precision=1h"
+curl "http://localhost:8000/zblizenia?data_poczatkowa=2020-01-01T00:00:00Z&data_koncowa=2020-01-02T00:00:00Z&precyzja=1h"
 ```
 
 ---
@@ -327,7 +327,7 @@ print(f"Utworzono satelitę ID={satellite['id']}")
 # Obliczenie pozycji
 position = requests.get(
     f"{BASE_URL}/satelity/{satellite['id']}/pozycja",
-    params={"timestamp": "2024-06-15T12:00:00Z"}
+    params={"znacznik_czasu": "2024-06-15T12:00:00Z"}
 ).json()
 
 print(f"Pozycja: lat={position['lat']:.2f}°, lon={position['lon']:.2f}°, alt={position['alt']:.1f}km")
@@ -397,9 +397,9 @@ System automatycznie wykrywa miejsca spotkań między satelitami (nie rzeczywist
 
 ### Parametry detekcji
 
-- **start_date** — początek przedziału czasowego (ISO 8601)
-- **end_date** — koniec przedziału czasowego (ISO 8601)
-- **precision** — krok czasowy (`1ms`, `1s`, `1m`, `1h`, `1d`)
+- **data_poczatkowa** — początek przedziału czasowego (ISO 8601)
+- **data_koncowa** — koniec przedziału czasowego (ISO 8601)
+- **precyzja** — krok czasowy (`1ms`, `1s`, `1m`, `1h`, `1d`)
 
 ### Próg wykrywania
 
@@ -409,7 +409,7 @@ Domyślny próg zbliżenia: **0.015 km** (15 metrów)
 
 ```bash
 # Wykryj zbliżenia w ciągu 24h z precyzją 1h
-curl "http://localhost:8000/zblizenia?start_date=2020-01-01T00:00:00Z&end_date=2020-01-02T00:00:00Z&precision=1h"
+curl "http://localhost:8000/zblizenia?data_poczatkowa=2020-01-01T00:00:00Z&data_koncowa=2020-01-02T00:00:00Z&precyzja=1h"
 ```
 
 **Odpowiedź:**
@@ -575,7 +575,7 @@ for i in range(12):
     timestamp = (start + timedelta(minutes=10*i)).isoformat() + "Z"
     pos = requests.get(
         f"{BASE_URL}/satelity/{iss['id']}/pozycja",
-        params={"timestamp": timestamp}
+        params={"znacznik_czasu": timestamp}
     ).json()
     
     print(f"T+{10*i:3d}min: lat={pos['lat']:6.2f}°, lon={pos['lon']:7.2f}°, alt={pos['alt']:.1f}km")
@@ -625,9 +625,9 @@ BASE_URL = "http://localhost:8000"
 
 # Wykryj potencjalne zbliżenia w ciągu tygodnia
 response = requests.get(f"{BASE_URL}/zblizenia", params={
-    "start_date": "2020-01-01T00:00:00Z",
-    "end_date": "2020-01-08T00:00:00Z",
-    "precision": "1h"
+    "data_poczatkowa": "2020-01-01T00:00:00Z",
+    "data_koncowa": "2020-01-08T00:00:00Z",
+    "precyzja": "1h"
 }).json()
 
 collisions = response.get('collisions', [])
@@ -697,10 +697,10 @@ curl http://localhost:8000/status
 
 ```python
 # ❌ Niepoprawne
-"timestamp": "2024-06-15 12:00:00"
+"znacznik_czasu": "2024-06-15 12:00:00"
 
 # ✅ Poprawne
-"timestamp": "2024-06-15T12:00:00Z"
+"znacznik_czasu": "2024-06-15T12:00:00Z"
 ```
 
 ### Debug mode
